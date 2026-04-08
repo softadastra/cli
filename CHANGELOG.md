@@ -1,177 +1,70 @@
-# Changelog - softadastra/cli
+# Changelog
 
-All notable changes to the **cli module** are documented in this file.
-
-The `cli` module provides a **command-line interface** for interacting with Softadastra systems.
-It acts as a thin layer between the user and the application runtime.
+All notable changes to this project will be documented in this file.
 
 ---
 
-## [0.1.0] - Initial CLI Interface
+## [0.1.0]
 
 ### Added
 
-* Base command abstraction (`Command`)
-* Core commands:
+- initial CLI module implementation
+- modular architecture:
+  - parser (Tokenizer, CommandLine, ArgParser, ParsedCommand)
+  - command system (CliCommand, CommandRegistry, ICommandHandler, BuiltinCommand)
+  - engine (CliEngine)
+  - core (CliConfig, CliContext, CliApplication, CliSession)
+  - io (Console, InputReader, OutputWriter, TerminalStyle)
+  - utils (StringUtils, HelpFormatter, TableFormatter)
 
-  * `RunCommand` → start the system
-  * `StatusCommand` → display current state
-  * `PairCommand` → connect to a peer
-  * `InitCommand` → initialize workspace
-* Basic argument parsing
-* Command execution pipeline
-* Standard output for user feedback
+- structured command parsing:
+  - positional arguments
+  - flags (`--flag`)
+  - key-value options (`--key=value`, `--key value`)
+  - automatic type inference (bool, integer, double, string)
 
-### Design
+- command registry with:
+  - handler binding
+  - alias support
+  - lookup and execution
 
-* Thin interface layer
-* Delegation to application layer (`softadastra/app`)
-* No business logic inside CLI
+- built-in commands:
+  - help
+  - version
+  - exit
 
----
+- CLI engine:
+  - input parsing pipeline
+  - command execution flow
+  - lifecycle management (start/stop/status)
 
-## [0.1.1] - Stability Improvements
+- CLI service:
+  - interactive REPL mode
+  - single command execution mode
 
-### Improved
+- examples:
+  - minimal CLI usage
+  - custom command registration demo
 
-* Safer argument parsing
-* More consistent command execution flow
-* Better handling of invalid input
+- tests:
+  - parser (Tokenizer, ArgParser)
+  - command registry
+  - engine execution
+  - console output (manual verification)
 
-### Fixed
+- CMake:
+  - registry-safe configuration
+  - examples and tests disabled by default
+  - canonical target: `softadastra::cli`
 
-* Edge cases with missing arguments
-* Incorrect command dispatch in certain scenarios
-
----
-
-## [0.2.0] - Usability Improvements
-
-### Added
-
-* Help command and usage output
-* Improved command descriptions
-* Basic validation for arguments
-
-### Improved
-
-* User experience for command execution
-* Clarity of CLI output
-
----
-
-## [0.3.0] - Output Improvements
-
-### Added
-
-* Structured output support (basic)
-* Standardized formatting for command responses
-
-### Improved
-
-* Readability of CLI output
-* Consistency across commands
+- Vix registry support:
+  - `vix.json` metadata
+  - compatibility with `vix install`, `vix build`, `vix run`
 
 ---
 
-## [0.4.0] - Command System Refinement
+## Notes
 
-### Added
-
-* Command registry system
-* Dynamic command dispatch
-* Extensible command structure
-
-### Improved
-
-* Maintainability of CLI commands
-* Cleaner separation between commands
-
----
-
-## [0.5.0] - Integration Enhancements
-
-### Added
-
-* Stronger integration with `softadastra/app`
-* Clear command-to-action mapping
-
-### Improved
-
-* Reduced coupling with internal modules
-* More predictable execution flow
-
----
-
-## [0.6.0] - Error Handling & Feedback
-
-### Added
-
-* Improved error messages
-* Exit codes for command outcomes
-* Validation feedback for users
-
-### Improved
-
-* Debuggability of CLI interactions
-* User guidance on failure
-
----
-
-## [0.7.0] - Extraction Ready
-
-### Added
-
-* Namespace stabilization (`softadastra::cli`)
-* Public API cleanup
-* Documentation for command interfaces
-
-### Improved
-
-* Decoupling from application-specific assumptions
-* Prepared for reuse in:
-
-  * Softadastra CLI tools
-  * SDK utilities
-  * Dev tooling
-
----
-
-## Roadmap
-
-### Planned
-
-* JSON output mode
-* Interactive CLI (REPL)
-* Command autocompletion
-* Remote CLI control
-* Advanced diagnostics and debugging commands
-
----
-
-## Philosophy
-
-The CLI is not the system.
-
-> It is the gateway to the system.
-
----
-
-## Rules
-
-* Never contain business logic
-* Always delegate to app
-* Always provide clear output
-* Always be predictable
-
----
-
-## Summary
-
-The `cli` module ensures:
-
-* User interaction
-* Command execution
-* System control
-
-It is the **interface layer of Softadastra**.
+- no external dependencies
+- designed for composability and deterministic builds
+- safe for integration in dependency graphs

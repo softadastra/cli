@@ -1,0 +1,38 @@
+{
+  "name": "cli",
+  "namespace": "softadastra",
+  "version": "0.1.0",
+  "type": "library",
+  "include": "include",
+  "license": "MIT",
+  "description": "Modular command-line interface engine for Softadastra systems: parsing, command registry, handlers, interactive REPL, and structured terminal I/O. Designed for deterministic, composable, registry-safe integration.",
+  "keywords": [
+    "softadastra",
+    "cli",
+    "command-line",
+    "terminal",
+    "parser",
+    "commands",
+    "repl",
+    "interactive",
+    "registry-safe",
+    "deterministic",
+    "composable",
+    "modular",
+    "c++",
+    "cpp",
+    "c++20",
+    "cross-platform",
+    "systems",
+    "infrastructure",
+    "library"
+  ],
+  "repository": "https://github.com/softadastra/cli",
+  "authors": [
+    {
+      "name": "Gaspard Kirira",
+      "github": "Gaspardkirira"
+    }
+  ],
+  "deps": []
+}

@@ -1,275 +1,157 @@
-# softadastra/cli
+# Softadastra CLI
 
-> Command-line interface for Softadastra systems.
+> **A modular and extensible command-line interface engine for real-world systems.**
 
-The `cli` module provides the **user-facing interface** to interact with Softadastra.
+Softadastra CLI provides a clean and structured way to build command-line tools with:
 
-It allows users to:
+- robust parsing
+- command registry and handlers
+- interactive REPL support
+- extensible architecture
 
-> Start, control, and inspect the system through simple commands.
-
----
-
-## Purpose
-
-The goal of `softadastra/cli` is simple:
-
-> Expose the system capabilities through a clean and minimal command-line interface.
+Designed to integrate seamlessly with the Softadastra ecosystem.
 
 ---
 
-## Core Principle
+## ✨ Features
 
-> Interface, not logic.
-
-This module:
-
-* Parses commands
-* Triggers actions
-* Displays results
-
-It does **not implement core logic**.
+- 🧠 Structured command parsing (`--flag`, `--key=value`, positional args)
+- ⚙️ Command registry with handlers
+- 🔁 Interactive mode (REPL)
+- 🧩 Modular architecture (parser, engine, command, io)
+- ⚡ Lightweight and fast
+- 🌍 Built for real-world environments
 
 ---
 
-## Responsibilities
+## 📦 Module Structure
 
-The `cli` module provides:
-
-* Command parsing
-* Command execution
-* User interaction (output, status)
-* Entry points for application control
-
----
-
-## What this module does NOT do
-
-* No sync logic (sync module)
-* No storage logic (store module)
-* No network communication (transport module)
-* No filesystem observation (fs module)
-
-👉 It only connects the user to the system.
-
----
-
-## Design Principles
-
-### 1. Thin layer
-
-The CLI must remain minimal and lightweight.
-
----
-
-### 2. Delegation
-
-All logic must be delegated to the `app` module.
-
----
-
-### 3. Predictability
-
-Commands must be:
-
-* Simple
-* Consistent
-* Explicit
-
----
-
-### 4. Scriptable
-
-The CLI should be usable in:
-
-* Shell scripts
-* Automation
-* Dev workflows
-
----
-
-## Module Structure
-
-```id="cli1x"
-modules/cli/
-├── include/softadastra/cli/
-│   ├── Command.hpp
-│   ├── RunCommand.hpp
-│   ├── StatusCommand.hpp
-│   ├── PairCommand.hpp
-│   └── InitCommand.hpp
-└── src/
+```text
+cli/
+├── parser/     # tokenization + parsing
+├── command/    # command definitions + handlers
+├── engine/     # orchestration
+├── core/       # config + context + session
+├── io/         # input/output abstraction
+└── utils/      # formatting helpers
 ```
 
 ---
 
-## Core Components
+## 🚀 Quick Start
 
-### Command
+### Minimal CLI
 
-Base abstraction for all CLI commands.
+```cpp
+#include <softadastra/cli/cli.hpp>
 
-Defines:
+int main()
+{
+    softadastra::cli::core::CliConfig config;
+    config.app_name = "my-cli";
 
-* Interface for execution
-* Common utilities
+    softadastra::cli::CliService cli(config);
 
----
+    softadastra::cli::CliOptions options;
+    options.interactive = true;
 
-### RunCommand
-
-Starts the system.
-
-Example:
-
-```bash id="cmd1"
-drive run
+    return cli.run(options);
+}
 ```
 
 ---
 
-### StatusCommand
+## 🧪 Example Commands
 
-Displays current state.
+Built-in commands:
 
-Example:
+| Command | Description |
+|---------|-------------|
+| `help`  | Show available commands |
+| `version` | Display current version |
+| `exit`  | Quit the CLI |
 
-```bash id="cmd2"
-drive status
+Custom commands can be registered using:
+
+```cpp
+registry.register_command(
+    CliCommand{ ... },
+    std::make_shared<MyHandler>()
+);
 ```
 
 ---
 
-### PairCommand
+## 🧠 Architecture
 
-Connects to another peer.
+The CLI is built around a simple pipeline:
 
-Example:
-
-```bash id="cmd3"
-drive pair 192.168.1.10:9000
+```
+input string
+      ↓
+  Tokenizer
+      ↓
+  CommandLine
+      ↓
+  ArgParser
+      ↓
+  ParsedCommand
+      ↓
+  CliEngine
+      ↓
+  CommandRegistry
+      ↓
+  ICommandHandler
 ```
 
 ---
 
-### InitCommand
+## 🔧 Usage Modes
 
-Initializes a workspace.
+### Interactive (REPL)
 
-Example:
+```
+> help
+> run file.cpp
+> exit
+```
 
-```bash id="cmd4"
-drive init
+### Single command
+
+```cpp
+options.command = "run file.cpp";
 ```
 
 ---
 
-## Example Usage
+## 📌 Design Principles
 
-```bash id="cmd5"
-drive init
-drive run --folder ~/SoftadastraDrive
-drive status
-```
-
----
-
-## Integration
-
-The CLI interacts only with:
-
-* `softadastra/app`
-
-It does not directly call:
-
-* sync
-* transport
-* wal
-* fs
+- **Separation of concerns** — each module has a single responsibility
+- **Minimal dependencies** — no bloat, no unnecessary coupling
+- **Type-safe parsing** — powered by `std::variant`
+- **Explicit error handling** — no silent failures
+- **Extensible command system** — plug in new commands without touching core logic
 
 ---
 
-## Execution Flow
+## 🔗 Integration
 
-1. User runs command
-2. CLI parses input
-3. CLI calls app layer
-4. App orchestrates modules
-5. CLI displays result
+Softadastra CLI is designed to work with the full Softadastra stack:
 
----
+| Module | Role |
+|--------|------|
+| `core` | Config, context, session |
+| `fs` | File system operations |
+| `wal` | Write-ahead log |
+| `store` | Local data store |
+| `sync` | Synchronization layer |
+| `transport` | Network transport |
+| `metadata` | Metadata management |
 
-## Output Model
-
-The CLI should support:
-
-* Human-readable output
-* Structured output (future: JSON)
-
----
-
-## Dependencies
-
-### Internal
-
-* softadastra/app
-* softadastra/core
-
-### External
-
-* Standard C++ libraries
+Each module can expose its own commands via the CLI.
 
 ---
 
-## MVP Scope
+## 📄 License
 
-* Basic commands:
-
-  * init
-  * run
-  * status
-  * pair
-* Simple argument parsing
-* Minimal output
-
----
-
-## Roadmap
-
-* JSON output mode
-* Interactive CLI mode
-* Command autocompletion
-* Advanced diagnostics
-* Remote control commands
-
----
-
-## Rules
-
-* Never contain business logic
-* Never bypass app layer
-* Always keep commands simple
-* Always fail with clear messages
-
----
-
-## Philosophy
-
-The CLI is the **interface, not the system**.
-
-> It should make the system usable, not define how it works.
-
----
-
-## Summary
-
-* Exposes commands
-* Delegates to app
-* Displays results
-* Remains lightweight
-
----
-
-## License
-
-See root LICENSE file.
+MIT
