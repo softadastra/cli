@@ -6,6 +6,7 @@
 #define SOFTADASTRA_CLI_COMMAND_HPP
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <softadastra/cli/types/CliCommandType.hpp>
@@ -22,17 +23,17 @@ namespace softadastra::cli::command
     /**
      * Command name used on the command line
      */
-    std::string name;
+    std::string name{};
 
     /**
      * Short human-readable description
      */
-    std::string description;
+    std::string description{};
 
     /**
      * Usage string shown in help output
      */
-    std::string usage;
+    std::string usage{};
 
     /**
      * Command category
@@ -42,7 +43,22 @@ namespace softadastra::cli::command
     /**
      * Optional aliases
      */
-    std::vector<std::string> aliases;
+    std::vector<std::string> aliases{};
+
+    CliCommand() = default;
+
+    CliCommand(std::string command_name,
+               std::string command_description,
+               std::string command_usage,
+               types::CliCommandType command_type,
+               std::vector<std::string> command_aliases = {})
+        : name(std::move(command_name)),
+          description(std::move(command_description)),
+          usage(std::move(command_usage)),
+          type(command_type),
+          aliases(std::move(command_aliases))
+    {
+    }
 
     /**
      * @brief Check whether this command definition is usable

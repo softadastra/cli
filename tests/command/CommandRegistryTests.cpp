@@ -27,11 +27,11 @@ namespace
   {
     CommandRegistry registry;
 
-    CliCommand cmd{
+    CliCommand cmd(
         "test",
         "test command",
         "test",
-        types::CliCommandType::Custom};
+        types::CliCommandType::Custom);
 
     registry.register_command(cmd, std::make_shared<DummyHandler>());
 
@@ -42,11 +42,11 @@ namespace
   {
     CommandRegistry registry;
 
-    CliCommand cmd{
+    CliCommand cmd(
         "build",
         "build project",
         "build",
-        types::CliCommandType::Custom};
+        types::CliCommandType::Custom);
 
     registry.register_command(cmd, std::make_shared<DummyHandler>());
 
@@ -59,11 +59,11 @@ namespace
   {
     CommandRegistry registry;
 
-    CliCommand cmd{
+    CliCommand cmd(
         "run",
         "run project",
         "run",
-        types::CliCommandType::Custom};
+        types::CliCommandType::Custom);
 
     auto handler = std::make_shared<DummyHandler>();
     registry.register_command(cmd, handler);
@@ -76,12 +76,12 @@ namespace
   {
     CommandRegistry registry;
 
-    CliCommand cmd{
+    CliCommand cmd(
         "help",
         "show help",
         "help",
         types::CliCommandType::Info,
-        {"h"}};
+        {"h"});
 
     registry.register_command(cmd, std::make_shared<DummyHandler>());
 
@@ -92,6 +92,24 @@ namespace
     assert(found.has_value());
     assert(found->name == "help");
   }
+
+  void test_all_commands_returns_unique_commands()
+  {
+    CommandRegistry registry;
+
+    CliCommand cmd(
+        "help",
+        "show help",
+        "help",
+        types::CliCommandType::Info,
+        {"h", "?"});
+
+    registry.register_command(cmd, std::make_shared<DummyHandler>());
+
+    const auto commands = registry.all_commands();
+    assert(commands.size() == 1);
+    assert(commands.front().name == "help");
+  }
 }
 
 int main()
@@ -100,6 +118,7 @@ int main()
   test_find_command();
   test_get_handler();
   test_alias();
+  test_all_commands_returns_unique_commands();
 
   std::cout << "[OK] CommandRegistryTests passed\n";
   return 0;

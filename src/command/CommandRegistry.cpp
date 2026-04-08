@@ -4,6 +4,9 @@
 
 #include <softadastra/cli/command/CommandRegistry.hpp>
 
+#include <unordered_set>
+#include <utility>
+
 namespace softadastra::cli::command
 {
   void CommandRegistry::register_command(const CliCommand &command,
@@ -59,11 +62,18 @@ namespace softadastra::cli::command
   std::vector<CliCommand> CommandRegistry::all_commands() const
   {
     std::vector<CliCommand> result;
+    std::unordered_set<std::string> seen;
+
     result.reserve(commands_.size());
 
-    for (const auto &[_, entry] : commands_)
+    for (const auto &[key, entry] : commands_)
     {
-      result.push_back(entry.command);
+      (void)key;
+
+      if (seen.insert(entry.command.name).second)
+      {
+        result.push_back(entry.command);
+      }
     }
 
     return result;
