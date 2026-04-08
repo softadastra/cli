@@ -8,6 +8,39 @@
 
 namespace softadastra::cli::utils
 {
+  namespace
+  {
+    std::string format_option_line(const command::CliOption &option)
+    {
+      std::ostringstream out;
+
+      out << "  ";
+
+      if (!option.short_name.empty())
+      {
+        out << "-" << option.short_name << ", ";
+      }
+      else
+      {
+        out << "    ";
+      }
+
+      out << "--" << option.name;
+
+      if (option.takes_value && !option.value_name.empty())
+      {
+        out << " <" << option.value_name << ">";
+      }
+
+      if (!option.description.empty())
+      {
+        out << "\n      " << option.description;
+      }
+
+      return out.str();
+    }
+  }
+
   std::string HelpFormatter::format(const std::vector<command::CliCommand> &commands,
                                     const std::string &app_name)
   {
@@ -36,7 +69,7 @@ namespace softadastra::cli::utils
       out << "\n    " << cmd.description << "\n";
     }
 
-    out << "\nUse '" << app_name << " <command> --help' for more information.\n";
+    out << "\nUse '" << app_name << " help <command>' for more information.\n";
 
     return out.str();
   }
@@ -67,6 +100,15 @@ namespace softadastra::cli::utils
         }
       }
       out << "\n";
+    }
+
+    if (!command.options.empty())
+    {
+      out << "\nOptions:\n";
+      for (const auto &option : command.options)
+      {
+        out << format_option_line(option) << "\n";
+      }
     }
 
     return out.str();

@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include <softadastra/cli/command/CliOption.hpp>
 #include <softadastra/cli/types/CliCommandType.hpp>
 
 namespace softadastra::cli::command
@@ -45,18 +46,25 @@ namespace softadastra::cli::command
      */
     std::vector<std::string> aliases{};
 
+    /**
+     * Supported options for this command
+     */
+    std::vector<CliOption> options{};
+
     CliCommand() = default;
 
     CliCommand(std::string command_name,
                std::string command_description,
                std::string command_usage,
                types::CliCommandType command_type,
-               std::vector<std::string> command_aliases = {})
+               std::vector<std::string> command_aliases = {},
+               std::vector<CliOption> command_options = {})
         : name(std::move(command_name)),
           description(std::move(command_description)),
           usage(std::move(command_usage)),
           type(command_type),
-          aliases(std::move(command_aliases))
+          aliases(std::move(command_aliases)),
+          options(std::move(command_options))
     {
     }
 

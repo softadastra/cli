@@ -5,6 +5,7 @@
 #ifndef SOFTADASTRA_CLI_INPUT_READER_HPP
 #define SOFTADASTRA_CLI_INPUT_READER_HPP
 
+#include <optional>
 #include <string>
 
 namespace softadastra::cli::io
@@ -18,14 +19,16 @@ namespace softadastra::cli::io
     /**
      * @brief Read one line from stdin
      *
-     * Returns empty string on EOF or error.
+     * Returns std::nullopt on EOF or input error.
      */
-    static std::string read_line();
+    static std::optional<std::string> read_line();
 
     /**
      * @brief Read one line with a prompt
+     *
+     * Returns std::nullopt on EOF or input error.
      */
-    static std::string read_line(const std::string &prompt);
+    static std::optional<std::string> read_line(const std::string &prompt);
   };
 
 } // namespace softadastra::cli::io

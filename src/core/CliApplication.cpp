@@ -46,6 +46,21 @@ namespace softadastra::cli::core
 
     auto &registry = context_.registry_ref();
 
+    if (command.has_option("help"))
+    {
+      auto help_handler = registry.get_handler("help");
+      if (help_handler == nullptr)
+      {
+        return types::CliErrorCode::InternalError;
+      }
+
+      parser::ParsedCommand help_command;
+      help_command.name = "help";
+      help_command.args.push_back(command.name);
+
+      return help_handler->handle(help_command);
+    }
+
     if (!registry.exists(command.name))
     {
       return types::CliErrorCode::CommandNotFound;
@@ -58,7 +73,6 @@ namespace softadastra::cli::core
     }
 
     session_.set_last_command(command.name);
-
     session_.set_status(types::CliStatus::ExecutingCommand);
 
     const auto result = handler->handle(command);

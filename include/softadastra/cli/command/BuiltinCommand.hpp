@@ -10,9 +10,12 @@
 
 #include <softadastra/cli/command/CliCommand.hpp>
 #include <softadastra/cli/command/ICommandHandler.hpp>
+#include <softadastra/cli/core/CliContext.hpp>
 
 namespace softadastra::cli::command
 {
+  namespace cli_core = softadastra::cli::core;
+
   /**
    * @brief Utility to register built-in CLI commands
    *
@@ -32,7 +35,8 @@ namespace softadastra::cli::command
     /**
      * @brief Return all built-in handlers aligned with definitions()
      */
-    static std::vector<std::shared_ptr<ICommandHandler>> handlers();
+    static std::vector<std::shared_ptr<ICommandHandler>> handlers(
+        const cli_core::CliContext &context);
   };
 
 } // namespace softadastra::cli::command

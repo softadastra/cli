@@ -35,6 +35,9 @@ namespace softadastra::cli
      */
     int run(const CliOptions &options);
 
+    void register_command(const softadastra::cli::command::CliCommand &command,
+                          std::shared_ptr<softadastra::cli::command::ICommandHandler> handler);
+
   private:
     int run_interactive();
     int run_single(const std::string &command);
