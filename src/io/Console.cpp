@@ -37,10 +37,12 @@ namespace softadastra::cli::io
   void Console::clear()
   {
 #if defined(_WIN32)
-    static_cast<void>(std::system("cls"));
+    const int result = std::system("cls");
 #else
-    static_cast<void>(std::system("clear"));
+    const int result = std::system("clear");
 #endif
+
+    (void)result;
   }
 
 } // namespace softadastra::cli::io
