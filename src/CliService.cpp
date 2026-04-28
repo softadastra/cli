@@ -67,7 +67,7 @@ namespace softadastra::cli
 
   int CliService::run_interactive()
   {
-    cli_io::Console::writeln("Softadastra CLI ready.");
+    cli_io::Console::writeln(config_.app_name + " CLI ready.");
 
     while (engine_.running())
     {
