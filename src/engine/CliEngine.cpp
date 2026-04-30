@@ -39,8 +39,18 @@ namespace softadastra::cli::engine
 
   void CliEngine::stop()
   {
+    if (status_ == cli_types::CliStatus::Stopped)
+    {
+      return;
+    }
+
     status_ = cli_types::CliStatus::Stopping;
-    application_.stop();
+
+    if (context_.valid())
+    {
+      application_.stop();
+    }
+
     status_ = cli_types::CliStatus::Stopped;
   }
 
@@ -51,11 +61,12 @@ namespace softadastra::cli::engine
 
   bool CliEngine::running() const noexcept
   {
-    return status_ == cli_types::CliStatus::Running;
+    return status_ == cli_types::CliStatus::Running &&
+           application_.running();
   }
 
   std::optional<cli_parser::ParsedCommand> CliEngine::parse(
-      const std::string &input) const
+      std::string_view input) const
   {
     if (!running())
     {
@@ -80,7 +91,8 @@ namespace softadastra::cli::engine
     return parsed;
   }
 
-  cli_types::CliErrorCode CliEngine::execute(const std::string &input)
+  cli_types::CliErrorCode CliEngine::execute(
+      std::string_view input)
   {
     if (!running())
     {
@@ -94,7 +106,7 @@ namespace softadastra::cli::engine
       return cli_types::CliErrorCode::ParseError;
     }
 
-    return execute(*parsed);
+    return execute(parsed.value());
   }
 
   cli_types::CliErrorCode CliEngine::execute(
@@ -110,10 +122,26 @@ namespace softadastra::cli::engine
       return cli_types::CliErrorCode::ParseError;
     }
 
-    return application_.execute(command);
+    status_ = cli_types::CliStatus::ExecutingCommand;
+
+    const auto result = application_.execute(command);
+
+    if (!application_.running())
+    {
+      status_ = cli_types::CliStatus::Stopped;
+      return result;
+    }
+
+    status_ = cli_types::CliStatus::Running;
+    return result;
   }
 
   cli_core::CliApplication &CliEngine::application() noexcept
+  {
+    return application_;
+  }
+
+  const cli_core::CliApplication &CliEngine::application() const noexcept
   {
     return application_;
   }

@@ -1,5 +1,16 @@
-/*
- * CliEngine.hpp
+/**
+ *
+ *  @file CliEngine.hpp
+ *  @author Gaspard Kirira
+ *
+ *  Copyright 2026, Softadastra.
+ *  All rights reserved.
+ *  https://github.com/softadastra/softadastra
+ *
+ *  Licensed under the Apache License, Version 2.0.
+ *
+ *  Softadastra CLI
+ *
  */
 
 #ifndef SOFTADASTRA_CLI_ENGINE_HPP
@@ -7,6 +18,7 @@
 
 #include <optional>
 #include <string>
+#include <string_view>
 
 #include <softadastra/cli/core/CliApplication.hpp>
 #include <softadastra/cli/core/CliContext.hpp>
@@ -24,66 +36,103 @@ namespace softadastra::cli::engine
   namespace cli_types = softadastra::cli::types;
 
   /**
-   * @brief Orchestrates CLI parsing and command execution
+   * @brief Orchestrates CLI parsing and command execution.
    *
-   * Responsibilities:
-   * - manage engine lifecycle
-   * - tokenize raw input
-   * - build command line representation
-   * - parse command arguments
-   * - execute parsed commands through CliApplication
+   * CliEngine is the high-level runtime entry point for the CLI module.
+   *
+   * It is responsible for:
+   * - engine lifecycle
+   * - raw input tokenization
+   * - command-line parsing
+   * - parsed command execution
+   * - delegation to CliApplication
+   *
+   * The engine does not implement command logic directly. Commands are resolved
+   * through the CommandRegistry owned by the CLI context.
    */
   class CliEngine
   {
   public:
+    /**
+     * @brief Creates a CLI engine from a shared runtime context.
+     *
+     * @param context Shared CLI context.
+     */
     explicit CliEngine(const cli_core::CliContext &context);
 
     /**
-     * @brief Start the CLI engine
+     * @brief Starts the CLI engine and its application.
+     *
+     * @return true when startup succeeds.
      */
-    bool start();
+    [[nodiscard]] bool start();
 
     /**
-     * @brief Stop the CLI engine
+     * @brief Stops the CLI engine and its application.
      */
     void stop();
 
     /**
-     * @brief Return current engine status
+     * @brief Returns the current engine status.
+     *
+     * @return Current CLI status.
      */
-    cli_types::CliStatus status() const noexcept;
+    [[nodiscard]] cli_types::CliStatus status() const noexcept;
 
     /**
-     * @brief Return true if engine is running
+     * @brief Returns true when the engine is running.
+     *
+     * @return true if the engine is active.
      */
-    bool running() const noexcept;
+    [[nodiscard]] bool running() const noexcept;
 
     /**
-     * @brief Parse raw input into a structured command
+     * @brief Parses raw CLI input into a structured command.
+     *
+     * @param input Raw input line.
+     * @return Parsed command or std::nullopt when input is empty.
      */
-    std::optional<cli_parser::ParsedCommand> parse(
-        const std::string &input) const;
+    [[nodiscard]] std::optional<cli_parser::ParsedCommand> parse(
+        std::string_view input) const;
 
     /**
-     * @brief Execute one raw CLI input line
+     * @brief Executes one raw CLI input line.
+     *
+     * @param input Raw input line.
+     * @return CLI error code.
      */
-    cli_types::CliErrorCode execute(const std::string &input);
+    [[nodiscard]] cli_types::CliErrorCode execute(
+        std::string_view input);
 
     /**
-     * @brief Execute one parsed command
+     * @brief Executes one parsed command.
+     *
+     * @param command Parsed command.
+     * @return CLI error code.
      */
-    cli_types::CliErrorCode execute(
+    [[nodiscard]] cli_types::CliErrorCode execute(
         const cli_parser::ParsedCommand &command);
 
     /**
-     * @brief Return underlying application
+     * @brief Returns the underlying CLI application.
+     *
+     * @return CLI application.
      */
-    cli_core::CliApplication &application() noexcept;
+    [[nodiscard]] cli_core::CliApplication &application() noexcept;
 
     /**
-     * @brief Return engine context
+     * @brief Returns the underlying CLI application.
+     *
+     * @return CLI application.
      */
-    const cli_core::CliContext &context() const noexcept;
+    [[nodiscard]] const cli_core::CliApplication &application() const noexcept;
+
+    /**
+     * @brief Returns the shared engine context.
+     *
+     * @return CLI context.
+     */
+    [[nodiscard]] const cli_core::CliContext &context() const noexcept;
 
   private:
     const cli_core::CliContext &context_;
@@ -93,4 +142,4 @@ namespace softadastra::cli::engine
 
 } // namespace softadastra::cli::engine
 
-#endif
+#endif // SOFTADASTRA_CLI_ENGINE_HPP

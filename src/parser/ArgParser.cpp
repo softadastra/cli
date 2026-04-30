@@ -5,6 +5,7 @@
 #include <cctype>
 #include <cstdlib>
 #include <string>
+#include <string_view>
 
 #include <softadastra/cli/parser/ArgParser.hpp>
 
@@ -12,15 +13,23 @@ namespace softadastra::cli::parser
 {
   namespace
   {
-    bool parse_bool(const std::string &value, bool &out)
+    bool parse_bool(
+        std::string_view value,
+        bool &out)
     {
-      if (value == "true" || value == "1" || value == "yes" || value == "on")
+      if (value == "true" ||
+          value == "1" ||
+          value == "yes" ||
+          value == "on")
       {
         out = true;
         return true;
       }
 
-      if (value == "false" || value == "0" || value == "no" || value == "off")
+      if (value == "false" ||
+          value == "0" ||
+          value == "no" ||
+          value == "off")
       {
         out = false;
         return true;
@@ -29,7 +38,7 @@ namespace softadastra::cli::parser
       return false;
     }
 
-    bool looks_like_integer(const std::string &value)
+    bool looks_like_integer(std::string_view value)
     {
       if (value.empty())
       {
@@ -37,12 +46,14 @@ namespace softadastra::cli::parser
       }
 
       std::size_t index = 0;
+
       if (value[0] == '-' || value[0] == '+')
       {
         if (value.size() == 1)
         {
           return false;
         }
+
         index = 1;
       }
 
@@ -57,16 +68,17 @@ namespace softadastra::cli::parser
       return true;
     }
 
-    bool looks_like_double(const std::string &value)
+    bool looks_like_double(std::string_view value)
     {
-      bool has_digit = false;
-      bool has_dot = false;
-      std::size_t index = 0;
-
       if (value.empty())
       {
         return false;
       }
+
+      bool has_digit = false;
+      bool has_dot = false;
+
+      std::size_t index = 0;
 
       if (value[0] == '-' || value[0] == '+')
       {
@@ -74,12 +86,14 @@ namespace softadastra::cli::parser
         {
           return false;
         }
+
         index = 1;
       }
 
       for (; index < value.size(); ++index)
       {
-        const unsigned char c = static_cast<unsigned char>(value[index]);
+        const unsigned char c =
+            static_cast<unsigned char>(value[index]);
 
         if (std::isdigit(c))
         {
@@ -99,29 +113,34 @@ namespace softadastra::cli::parser
       return has_digit && has_dot;
     }
 
-    types::OptionValue parse_option_value(const std::string &value)
+    types::OptionValue parse_option_value(std::string_view value)
     {
       bool bool_value = false;
+
       if (parse_bool(value, bool_value))
       {
         return bool_value;
       }
 
+      const std::string raw_value{value};
+
       if (looks_like_integer(value))
       {
-        return static_cast<std::int64_t>(std::strtoll(value.c_str(), nullptr, 10));
+        return static_cast<std::int64_t>(
+            std::strtoll(raw_value.c_str(), nullptr, 10));
       }
 
       if (looks_like_double(value))
       {
-        return std::strtod(value.c_str(), nullptr);
+        return std::strtod(raw_value.c_str(), nullptr);
       }
 
-      return value;
+      return raw_value;
     }
   }
 
-  ParsedCommand ArgParser::parse(const CommandLine &cmdline)
+  ParsedCommand ArgParser::parse(
+      const CommandLine &cmdline)
   {
     ParsedCommand result;
 
@@ -144,22 +163,24 @@ namespace softadastra::cli::parser
         continue;
       }
 
-      const auto equal_pos = token.find('=');
+      const std::string key = normalize_key(token);
 
-      if (equal_pos != std::string::npos)
+      if (key.empty())
       {
-        const std::string key = normalize_key(token.substr(0, equal_pos));
-        const std::string raw_value = token.substr(equal_pos + 1);
-
-        result.options[key] = parse_option_value(raw_value);
         continue;
       }
 
-      const std::string key = normalize_key(token);
+      if (has_inline_value(token))
+      {
+        result.options[key] =
+            parse_option_value(inline_value(token));
+        continue;
+      }
 
       if ((i + 1) < tokens.size() && !is_option(tokens[i + 1]))
       {
-        result.options[key] = parse_option_value(tokens[i + 1]);
+        result.options[key] =
+            parse_option_value(tokens[i + 1]);
         ++i;
         continue;
       }
@@ -170,21 +191,53 @@ namespace softadastra::cli::parser
     return result;
   }
 
-  bool ArgParser::is_option(const std::string &token)
+  bool ArgParser::is_option(
+      std::string_view token) noexcept
   {
     return token.size() > 1 &&
            token[0] == '-' &&
-           token[1] == '-';
+           token != "-";
   }
 
-  std::string ArgParser::normalize_key(const std::string &token)
+  bool ArgParser::has_inline_value(
+      std::string_view token) noexcept
+  {
+    return token.find('=') != std::string_view::npos;
+  }
+
+  std::string ArgParser::normalize_key(
+      std::string_view token)
   {
     if (token.rfind("--", 0) == 0)
     {
-      return token.substr(2);
+      token.remove_prefix(2);
+    }
+    else if (token.rfind("-", 0) == 0)
+    {
+      token.remove_prefix(1);
     }
 
-    return token;
+    const std::size_t equal_pos = token.find('=');
+
+    if (equal_pos != std::string_view::npos)
+    {
+      token = token.substr(0, equal_pos);
+    }
+
+    return std::string{token};
+  }
+
+  std::string ArgParser::inline_value(
+      std::string_view token)
+  {
+    const std::size_t equal_pos = token.find('=');
+
+    if (equal_pos == std::string_view::npos)
+    {
+      return {};
+    }
+
+    return std::string{token.substr(equal_pos + 1)};
   }
 
 } // namespace softadastra::cli::parser

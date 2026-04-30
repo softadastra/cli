@@ -5,16 +5,29 @@
 #include <softadastra/cli/io/InputReader.hpp>
 
 #include <iostream>
+#include <istream>
+#include <ostream>
 #include <string>
-#include <optional>
 
 namespace softadastra::cli::io
 {
   std::optional<std::string> InputReader::read_line()
   {
+    return read_line(std::cin);
+  }
+
+  std::optional<std::string> InputReader::read_line(
+      std::string_view prompt)
+  {
+    return read_line(std::cin, std::cout, prompt);
+  }
+
+  std::optional<std::string> InputReader::read_line(
+      std::istream &input)
+  {
     std::string line;
 
-    if (!std::getline(std::cin, line))
+    if (!std::getline(input, line))
     {
       return std::nullopt;
     }
@@ -22,15 +35,18 @@ namespace softadastra::cli::io
     return line;
   }
 
-  std::optional<std::string> InputReader::read_line(const std::string &prompt)
+  std::optional<std::string> InputReader::read_line(
+      std::istream &input,
+      std::ostream &output,
+      std::string_view prompt)
   {
     if (!prompt.empty())
     {
-      std::cout << prompt;
-      std::cout.flush();
+      output << prompt;
+      output.flush();
     }
 
-    return read_line();
+    return read_line(input);
   }
 
 } // namespace softadastra::cli::io

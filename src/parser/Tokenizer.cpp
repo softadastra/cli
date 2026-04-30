@@ -2,54 +2,56 @@
  * Tokenizer.cpp
  */
 
+#include <cctype>
+#include <cstddef>
+#include <utility>
+
 #include <softadastra/cli/parser/Tokenizer.hpp>
 
 namespace softadastra::cli::parser
 {
-  std::vector<std::string> Tokenizer::tokenize(const std::string &input)
+  std::vector<std::string> Tokenizer::tokenize(
+      std::string_view input)
   {
     std::vector<std::string> tokens;
     std::string current;
 
     bool in_quotes = false;
+    bool escaping = false;
     char quote_char = '\0';
 
-    for (std::size_t i = 0; i < input.size(); ++i)
+    for (const char c : input)
     {
-      const char c = input[i];
+      if (escaping)
+      {
+        current += c;
+        escaping = false;
+        continue;
+      }
 
-      // Handle quotes
-      if ((c == '"' || c == '\''))
+      if (c == '\\')
+      {
+        escaping = true;
+        continue;
+      }
+
+      if (c == '"' || c == '\'')
       {
         if (!in_quotes)
         {
           in_quotes = true;
           quote_char = c;
+          continue;
         }
-        else if (quote_char == c)
+
+        if (quote_char == c)
         {
           in_quotes = false;
           quote_char = '\0';
+          continue;
         }
-        else
-        {
-          current += c;
-        }
-        continue;
       }
 
-      // Handle escape character
-      if (c == '\\')
-      {
-        if (i + 1 < input.size())
-        {
-          current += input[i + 1];
-          ++i;
-        }
-        continue;
-      }
-
-      // Split on space (only if not in quotes)
       if (std::isspace(static_cast<unsigned char>(c)) && !in_quotes)
       {
         push_token(tokens, current);
@@ -59,20 +61,27 @@ namespace softadastra::cli::parser
       current += c;
     }
 
-    // Push last token
+    if (escaping)
+    {
+      current += '\\';
+    }
+
     push_token(tokens, current);
 
     return tokens;
   }
 
-  void Tokenizer::push_token(std::vector<std::string> &tokens,
-                             std::string &current)
+  void Tokenizer::push_token(
+      std::vector<std::string> &tokens,
+      std::string &current)
   {
-    if (!current.empty())
+    if (current.empty())
     {
-      tokens.push_back(std::move(current));
-      current.clear();
+      return;
     }
+
+    tokens.push_back(std::move(current));
+    current.clear();
   }
 
 } // namespace softadastra::cli::parser

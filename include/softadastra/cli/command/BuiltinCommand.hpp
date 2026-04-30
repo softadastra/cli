@@ -1,5 +1,16 @@
-/*
- * BuiltinCommand.hpp
+/**
+ *
+ *  @file BuiltinCommand.hpp
+ *  @author Gaspard Kirira
+ *
+ *  Copyright 2026, Softadastra.
+ *  All rights reserved.
+ *  https://github.com/softadastra/softadastra
+ *
+ *  Licensed under the Apache License, Version 2.0.
+ *
+ *  Softadastra CLI
+ *
  */
 
 #ifndef SOFTADASTRA_CLI_BUILTIN_COMMAND_HPP
@@ -17,28 +28,42 @@ namespace softadastra::cli::command
   namespace cli_core = softadastra::cli::core;
 
   /**
-   * @brief Utility to register built-in CLI commands
+   * @brief Factory for built-in CLI command definitions and handlers.
    *
-   * Provides default commands such as:
+   * BuiltinCommand centralizes the default commands provided by the CLI module.
+   *
+   * Built-in commands usually include:
    * - help
    * - version
    * - exit
+   *
+   * The order of definitions() and handlers() must remain aligned when they
+   * are registered together by the command registry.
+   *
+   * This class is stateless and only exposes factory helpers.
    */
   class BuiltinCommand
   {
   public:
     /**
-     * @brief Return all built-in command definitions
+     * @brief Returns built-in command definitions.
+     *
+     * @return Built-in command metadata.
      */
-    static std::vector<CliCommand> definitions();
+    [[nodiscard]] static std::vector<CliCommand> definitions();
 
     /**
-     * @brief Return all built-in handlers aligned with definitions()
+     * @brief Returns built-in command handlers.
+     *
+     * The returned handlers must be in the same logical order as definitions().
+     *
+     * @param context CLI runtime context used by built-in handlers.
+     * @return Built-in command handlers.
      */
-    static std::vector<std::shared_ptr<ICommandHandler>> handlers(
+    [[nodiscard]] static std::vector<std::shared_ptr<ICommandHandler>> handlers(
         const cli_core::CliContext &context);
   };
 
 } // namespace softadastra::cli::command
 
-#endif
+#endif // SOFTADASTRA_CLI_BUILTIN_COMMAND_HPP

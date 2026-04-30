@@ -2,6 +2,7 @@
  * CommandLine.cpp
  */
 
+#include <iterator>
 #include <utility>
 
 #include <softadastra/cli/parser/CommandLine.hpp>
@@ -51,7 +52,7 @@ namespace softadastra::cli::parser
     }
 
     return std::vector<std::string>(
-        tokens_.begin() + 1,
+        std::next(tokens_.begin()),
         tokens_.end());
   }
 

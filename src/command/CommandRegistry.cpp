@@ -4,79 +4,125 @@
 
 #include <softadastra/cli/command/CommandRegistry.hpp>
 
-#include <unordered_set>
 #include <utility>
 
 namespace softadastra::cli::command
 {
-  void CommandRegistry::register_command(const CliCommand &command,
-                                         std::shared_ptr<ICommandHandler> handler)
+  void CommandRegistry::register_command(
+      const CliCommand &command,
+      std::shared_ptr<ICommandHandler> handler)
   {
     if (!command.valid() || handler == nullptr)
     {
       return;
     }
 
-    Entry entry{command, std::move(handler)};
+    const bool is_new_command =
+        entries_.find(command.name) == entries_.end();
 
-    // Register main command name
-    commands_[command.name] = entry;
+    Entry entry{
+        command,
+        std::move(handler),
+        command.name,
+    };
 
-    // Register aliases
+    entries_[command.name] = entry;
+
+    if (is_new_command)
+    {
+      canonical_order_.push_back(command.name);
+    }
+
     for (const auto &alias : command.aliases)
     {
-      if (!alias.empty())
+      if (alias.empty())
       {
-        commands_[alias] = entry;
+        continue;
       }
+
+      entries_[alias] = entry;
     }
   }
 
-  bool CommandRegistry::exists(const std::string &name) const
+  bool CommandRegistry::exists(
+      std::string_view name) const
   {
-    return commands_.find(name) != commands_.end();
+    return find_entry(name) != nullptr;
   }
 
-  std::optional<CliCommand> CommandRegistry::find_command(const std::string &name) const
+  std::optional<CliCommand> CommandRegistry::find_command(
+      std::string_view name) const
   {
-    auto it = commands_.find(name);
-    if (it == commands_.end())
+    const Entry *entry = find_entry(name);
+
+    if (entry == nullptr)
     {
       return std::nullopt;
     }
 
-    return it->second.command;
+    return entry->command;
   }
 
-  std::shared_ptr<ICommandHandler> CommandRegistry::get_handler(const std::string &name) const
+  std::shared_ptr<ICommandHandler> CommandRegistry::get_handler(
+      std::string_view name) const
   {
-    auto it = commands_.find(name);
-    if (it == commands_.end())
+    const Entry *entry = find_entry(name);
+
+    if (entry == nullptr)
     {
       return nullptr;
     }
 
-    return it->second.handler;
+    return entry->handler;
   }
 
   std::vector<CliCommand> CommandRegistry::all_commands() const
   {
     std::vector<CliCommand> result;
-    std::unordered_set<std::string> seen;
+    result.reserve(canonical_order_.size());
 
-    result.reserve(commands_.size());
-
-    for (const auto &[key, entry] : commands_)
+    for (const auto &name : canonical_order_)
     {
-      (void)key;
+      const auto it = entries_.find(name);
 
-      if (seen.insert(entry.command.name).second)
+      if (it == entries_.end())
       {
-        result.push_back(entry.command);
+        continue;
       }
+
+      result.push_back(it->second.command);
     }
 
     return result;
+  }
+
+  void CommandRegistry::clear()
+  {
+    entries_.clear();
+    canonical_order_.clear();
+  }
+
+  std::size_t CommandRegistry::size() const noexcept
+  {
+    return canonical_order_.size();
+  }
+
+  bool CommandRegistry::empty() const noexcept
+  {
+    return canonical_order_.empty();
+  }
+
+  const CommandRegistry::Entry *CommandRegistry::find_entry(
+      std::string_view name) const
+  {
+    const auto it = entries_.find(std::string{name});
+
+    if (it == entries_.end())
+    {
+      return nullptr;
+    }
+
+    return &it->second;
   }
 
 } // namespace softadastra::cli::command

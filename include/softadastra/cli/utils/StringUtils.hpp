@@ -1,5 +1,16 @@
-/*
- * StringUtils.hpp
+/**
+ *
+ *  @file StringUtils.hpp
+ *  @author Gaspard Kirira
+ *
+ *  Copyright 2026, Softadastra.
+ *  All rights reserved.
+ *  https://github.com/softadastra/softadastra
+ *
+ *  Licensed under the Apache License, Version 2.0.
+ *
+ *  Softadastra CLI
+ *
  */
 
 #ifndef SOFTADASTRA_CLI_STRING_UTILS_HPP
@@ -8,66 +19,171 @@
 #include <algorithm>
 #include <cctype>
 #include <string>
+#include <string_view>
+#include <vector>
 
 namespace softadastra::cli::utils
 {
   /**
-   * @brief String utility helpers
+   * @brief Provides small string helpers used by the CLI module.
+   *
+   * StringUtils centralizes common string operations needed by parsers,
+   * formatters, command handlers, and user-facing CLI output.
+   *
+   * All helpers are stateless and allocation-conscious where possible.
    */
   class StringUtils
   {
   public:
     /**
-     * @brief Trim whitespace from both ends
+     * @brief Removes whitespace from both ends of a string.
+     *
+     * @param value Input string.
+     * @return Trimmed string.
      */
-    static std::string trim(const std::string &value)
+    [[nodiscard]] static std::string trim(std::string_view value)
     {
-      auto begin = value.begin();
-      auto end = value.end();
+      std::size_t begin = 0;
+      std::size_t end = value.size();
 
-      while (begin != end && std::isspace(static_cast<unsigned char>(*begin)))
+      while (begin < end &&
+             std::isspace(static_cast<unsigned char>(value[begin])))
       {
         ++begin;
       }
 
-      while (begin != end && std::isspace(static_cast<unsigned char>(*(end - 1))))
+      while (end > begin &&
+             std::isspace(static_cast<unsigned char>(value[end - 1])))
       {
         --end;
       }
 
-      return std::string(begin, end);
+      return std::string(value.substr(begin, end - begin));
     }
 
     /**
-     * @brief Convert string to lowercase
+     * @brief Converts a string to lowercase.
+     *
+     * @param value Input string.
+     * @return Lowercase string.
      */
-    static std::string to_lower(std::string value)
+    [[nodiscard]] static std::string to_lower(std::string_view value)
     {
-      std::transform(value.begin(), value.end(), value.begin(),
-                     [](unsigned char c)
-                     { return static_cast<char>(std::tolower(c)); });
-      return value;
+      std::string result{value};
+
+      std::transform(
+          result.begin(),
+          result.end(),
+          result.begin(),
+          [](unsigned char c)
+          {
+            return static_cast<char>(std::tolower(c));
+          });
+
+      return result;
     }
 
     /**
-     * @brief Check if string starts with prefix
+     * @brief Returns true if a string starts with a prefix.
+     *
+     * @param value Input string.
+     * @param prefix Prefix to match.
+     * @return true when value starts with prefix.
      */
-    static bool starts_with(const std::string &value, const std::string &prefix)
+    [[nodiscard]] static bool starts_with(
+        std::string_view value,
+        std::string_view prefix) noexcept
     {
       return value.size() >= prefix.size() &&
-             value.compare(0, prefix.size(), prefix) == 0;
+             value.substr(0, prefix.size()) == prefix;
     }
 
     /**
-     * @brief Check if string ends with suffix
+     * @brief Returns true if a string ends with a suffix.
+     *
+     * @param value Input string.
+     * @param suffix Suffix to match.
+     * @return true when value ends with suffix.
      */
-    static bool ends_with(const std::string &value, const std::string &suffix)
+    [[nodiscard]] static bool ends_with(
+        std::string_view value,
+        std::string_view suffix) noexcept
     {
       return value.size() >= suffix.size() &&
-             value.compare(value.size() - suffix.size(), suffix.size(), suffix) == 0;
+             value.substr(value.size() - suffix.size()) == suffix;
+    }
+
+    /**
+     * @brief Returns true if the string is empty after trimming.
+     *
+     * @param value Input string.
+     * @return true when trimmed value is empty.
+     */
+    [[nodiscard]] static bool is_blank(std::string_view value)
+    {
+      return trim(value).empty();
+    }
+
+    /**
+     * @brief Splits a string by a single-character delimiter.
+     *
+     * Empty parts are preserved.
+     *
+     * @param value Input string.
+     * @param delimiter Delimiter character.
+     * @return Split parts.
+     */
+    [[nodiscard]] static std::vector<std::string> split(
+        std::string_view value,
+        char delimiter)
+    {
+      std::vector<std::string> parts;
+      std::size_t start = 0;
+
+      while (start <= value.size())
+      {
+        const std::size_t pos = value.find(delimiter, start);
+
+        if (pos == std::string_view::npos)
+        {
+          parts.emplace_back(value.substr(start));
+          break;
+        }
+
+        parts.emplace_back(value.substr(start, pos - start));
+        start = pos + 1;
+      }
+
+      return parts;
+    }
+
+    /**
+     * @brief Joins string parts with a separator.
+     *
+     * @param parts Values to join.
+     * @param separator Separator inserted between values.
+     * @return Joined string.
+     */
+    [[nodiscard]] static std::string join(
+        const std::vector<std::string> &parts,
+        std::string_view separator)
+    {
+      std::string result;
+
+      for (std::size_t i = 0; i < parts.size(); ++i)
+      {
+        result += parts[i];
+
+        if (i + 1 < parts.size())
+        {
+          result += separator;
+        }
+      }
+
+      return result;
     }
   };
 
 } // namespace softadastra::cli::utils
 
-#endif
+#endif // SOFTADASTRA_CLI_STRING_UTILS_HPP

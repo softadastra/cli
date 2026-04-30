@@ -18,23 +18,41 @@ namespace softadastra::cli::core
       return false;
     }
 
-    session_.start();
+    context_.session_ref().start();
     return true;
   }
 
   void CliApplication::stop()
   {
-    session_.stop();
+    if (!context_.valid())
+    {
+      return;
+    }
+
+    context_.session_ref().stop();
   }
 
   bool CliApplication::running() const noexcept
   {
-    return session_.running();
+    if (!context_.valid())
+    {
+      return false;
+    }
+
+    return context_.session->running();
   }
 
-  types::CliErrorCode CliApplication::execute(const parser::ParsedCommand &command)
+  types::CliErrorCode CliApplication::execute(
+      const parser::ParsedCommand &command)
   {
-    if (!running())
+    if (!context_.valid())
+    {
+      return types::CliErrorCode::InvalidState;
+    }
+
+    auto &session = context_.session_ref();
+
+    if (!session.running())
     {
       return types::CliErrorCode::InvalidState;
     }
@@ -46,9 +64,11 @@ namespace softadastra::cli::core
 
     auto &registry = context_.registry_ref();
 
-    if (command.has_option("help"))
+    if (command.has_option("help") ||
+        command.has_option("h"))
     {
-      auto help_handler = registry.get_handler("help");
+      const auto help_handler = registry.get_handler("help");
+
       if (help_handler == nullptr)
       {
         return types::CliErrorCode::InternalError;
@@ -66,25 +86,36 @@ namespace softadastra::cli::core
       return types::CliErrorCode::CommandNotFound;
     }
 
-    auto handler = registry.get_handler(command.name);
+    const auto handler = registry.get_handler(command.name);
+
     if (handler == nullptr)
     {
       return types::CliErrorCode::InternalError;
     }
 
-    session_.set_last_command(command.name);
-    session_.set_status(types::CliStatus::ExecutingCommand);
+    session.set_last_command(command.name);
+    session.increment_command_count();
+    session.set_status(types::CliStatus::ExecutingCommand);
 
     const auto result = handler->handle(command);
 
-    session_.set_status(types::CliStatus::Running);
+    if (result == types::CliErrorCode::None)
+    {
+      if (session.stop_requested())
+      {
+        session.stop();
+      }
+      else if (session.running())
+      {
+        session.set_status(types::CliStatus::Running);
+      }
+    }
+    else
+    {
+      session.set_status(types::CliStatus::Running);
+    }
 
     return result;
-  }
-
-  CliSession &CliApplication::session() noexcept
-  {
-    return session_;
   }
 
   const CliContext &CliApplication::context() const noexcept

@@ -9,16 +9,20 @@
 #include <softadastra/cli/command/BuiltinCommand.hpp>
 #include <softadastra/cli/types/CliErrorCode.hpp>
 #include <softadastra/cli/utils/HelpFormatter.hpp>
+#include <softadastra/cli/utils/Style.hpp>
+#include <softadastra/cli/utils/Ui.hpp>
 
 namespace softadastra::cli::command
 {
   namespace types = softadastra::cli::types;
   namespace cli_utils = softadastra::cli::utils;
   namespace cli_core = softadastra::cli::core;
+  namespace ui = softadastra::cli::utils::ui;
+  namespace style = softadastra::cli::utils::style;
 
   namespace
   {
-    class HelpCommandHandler : public ICommandHandler
+    class HelpCommandHandler final : public ICommandHandler
     {
     public:
       explicit HelpCommandHandler(const cli_core::CliContext &context)
@@ -26,10 +30,12 @@ namespace softadastra::cli::command
       {
       }
 
-      types::CliErrorCode handle(const parser::ParsedCommand &command) override
+      [[nodiscard]] types::CliErrorCode handle(
+          const parser::ParsedCommand &command) override
       {
         if (!context_.valid())
         {
+          ui::err_line(std::cerr, "CLI context is invalid.");
           return types::CliErrorCode::InvalidState;
         }
 
@@ -42,12 +48,20 @@ namespace softadastra::cli::command
 
           if (!found.has_value())
           {
-            std::cerr << "Unknown command: " << command.args.front() << "\n";
+            ui::err_line(
+                std::cerr,
+                "Unknown command: " + command.args.front());
+
+            ui::tip_line(
+                std::cerr,
+                "Run '" + config.app_name + " help' to list available commands.");
+
             return types::CliErrorCode::CommandNotFound;
           }
 
           std::cout << cli_utils::HelpFormatter::format_command(*found)
                     << std::flush;
+
           return types::CliErrorCode::None;
         }
 
@@ -63,7 +77,7 @@ namespace softadastra::cli::command
       const cli_core::CliContext &context_;
     };
 
-    class VersionCommandHandler : public ICommandHandler
+    class VersionCommandHandler final : public ICommandHandler
     {
     public:
       explicit VersionCommandHandler(const cli_core::CliContext &context)
@@ -71,15 +85,25 @@ namespace softadastra::cli::command
       {
       }
 
-      types::CliErrorCode handle(const parser::ParsedCommand &) override
+      [[nodiscard]] types::CliErrorCode handle(
+          const parser::ParsedCommand &) override
       {
         if (!context_.valid())
         {
+          ui::err_line(std::cerr, "CLI context is invalid.");
           return types::CliErrorCode::InvalidState;
         }
 
         const auto &config = context_.config_ref();
-        std::cout << config.app_name << " v" << config.version << "\n";
+
+        std::cout << style::BOLD << style::CYAN
+                  << config.app_name
+                  << style::RESET
+                  << " "
+                  << style::GRAY << "v" << style::RESET
+                  << style::YELLOW << config.version << style::RESET
+                  << "\n";
+
         return types::CliErrorCode::None;
       }
 
@@ -87,12 +111,13 @@ namespace softadastra::cli::command
       const cli_core::CliContext &context_;
     };
 
-    class ExitCommandHandler : public ICommandHandler
+    class ExitCommandHandler final : public ICommandHandler
     {
     public:
-      types::CliErrorCode handle(const parser::ParsedCommand &) override
+      [[nodiscard]] types::CliErrorCode handle(
+          const parser::ParsedCommand &) override
       {
-        std::cout << "Exiting...\n";
+        ui::info_line(std::cout, "Exiting...");
         return types::CliErrorCode::None;
       }
     };
@@ -101,26 +126,40 @@ namespace softadastra::cli::command
   std::vector<CliCommand> BuiltinCommand::definitions()
   {
     return {
-        {"help",
-         "Show help information",
-         "help [command]",
-         types::CliCommandType::Info,
-         {"h"},
-         {
-             {"help", "h", "Show help for a command", "COMMAND", false},
-         }},
-        {"version",
-         "Show CLI version",
-         "version",
-         types::CliCommandType::Info,
-         {"v"},
-         {}},
-        {"exit",
-         "Exit the CLI",
-         "exit",
-         types::CliCommandType::System,
-         {"quit", "q"},
-         {}}};
+        {
+            "help",
+            "Show help information",
+            "help [command]",
+            types::CliCommandType::Info,
+            {"h"},
+            {
+                {
+                    "command",
+                    "c",
+                    "Show help for a specific command",
+                    "COMMAND",
+                    true,
+                    false,
+                },
+            },
+        },
+        {
+            "version",
+            "Show CLI version",
+            "version",
+            types::CliCommandType::Info,
+            {"v"},
+            {},
+        },
+        {
+            "exit",
+            "Exit the CLI session",
+            "exit",
+            types::CliCommandType::System,
+            {"quit", "q"},
+            {},
+        },
+    };
   }
 
   std::vector<std::shared_ptr<ICommandHandler>> BuiltinCommand::handlers(
@@ -129,7 +168,8 @@ namespace softadastra::cli::command
     return {
         std::make_shared<HelpCommandHandler>(context),
         std::make_shared<VersionCommandHandler>(context),
-        std::make_shared<ExitCommandHandler>()};
+        std::make_shared<ExitCommandHandler>(),
+    };
   }
 
 } // namespace softadastra::cli::command

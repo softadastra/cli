@@ -1,5 +1,16 @@
-/*
- * HelpFormatter.hpp
+/**
+ *
+ *  @file HelpFormatter.hpp
+ *  @author Gaspard Kirira
+ *
+ *  Copyright 2026, Softadastra.
+ *  All rights reserved.
+ *  https://github.com/softadastra/softadastra
+ *
+ *  Licensed under the Apache License, Version 2.0.
+ *
+ *  Softadastra CLI
+ *
  */
 
 #ifndef SOFTADASTRA_CLI_HELP_FORMATTER_HPP
@@ -15,31 +26,52 @@ namespace softadastra::cli::utils
   namespace command = softadastra::cli::command;
 
   /**
-   * @brief Formats CLI help output
+   * @brief Formats human-readable CLI help output.
    *
-   * Responsible for rendering:
-   * - command list
-   * - usage
-   * - descriptions
+   * HelpFormatter centralizes help rendering for the CLI module.
+   *
+   * It is responsible for:
+   * - full application help
+   * - single command help
+   * - usage lines
+   * - command descriptions
+   *
+   * The formatter is stateless and safe to use from any CLI component.
    */
   class HelpFormatter
   {
   public:
     /**
-     * @brief Format full help output
+     * @brief Formats full application help.
+     *
+     * @param commands Commands to display.
+     * @param app_name Application name used in usage text.
+     * @return Formatted help text.
      */
-    static std::string format(const std::vector<command::CliCommand> &commands,
-                              const std::string &app_name);
+    [[nodiscard]] static std::string format(
+        const std::vector<command::CliCommand> &commands,
+        const std::string &app_name);
 
     /**
-     * @brief Format a single command help
+     * @brief Formats help for a single command.
+     *
+     * @param command Command metadata.
+     * @return Formatted command help text.
      */
-    static std::string format_command(const command::CliCommand &command);
+    [[nodiscard]] static std::string format_command(
+        const command::CliCommand &command);
 
   private:
-    static std::string format_command_line(const command::CliCommand &command);
+    /**
+     * @brief Formats one command summary line.
+     *
+     * @param command Command metadata.
+     * @return Formatted command line.
+     */
+    [[nodiscard]] static std::string format_command_line(
+        const command::CliCommand &command);
   };
 
 } // namespace softadastra::cli::utils
 
-#endif
+#endif // SOFTADASTRA_CLI_HELP_FORMATTER_HPP

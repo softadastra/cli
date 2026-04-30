@@ -2,30 +2,60 @@
  * OutputWriter.cpp
  */
 
-#include <iostream>
-
 #include <softadastra/cli/io/OutputWriter.hpp>
+
+#include <iostream>
+#include <ostream>
 
 namespace softadastra::cli::io
 {
-  void OutputWriter::write(const std::string &message)
+  void OutputWriter::write(std::string_view message)
   {
-    std::cout << message;
+    write(std::cout, message);
   }
 
-  void OutputWriter::writeln(const std::string &message)
+  void OutputWriter::writeln(std::string_view message)
   {
-    std::cout << message << '\n';
+    writeln(std::cout, message);
   }
 
-  void OutputWriter::error(const std::string &message)
+  void OutputWriter::error(std::string_view message)
   {
-    std::cerr << message;
+    write(std::cerr, message);
   }
 
-  void OutputWriter::errorln(const std::string &message)
+  void OutputWriter::errorln(std::string_view message)
   {
-    std::cerr << message << '\n';
+    writeln(std::cerr, message);
+  }
+
+  void OutputWriter::write(
+      std::ostream &output,
+      std::string_view message)
+  {
+    output << message;
+  }
+
+  void OutputWriter::writeln(
+      std::ostream &output,
+      std::string_view message)
+  {
+    output << message << '\n';
+  }
+
+  void OutputWriter::flush()
+  {
+    std::cout.flush();
+  }
+
+  void OutputWriter::flush_error()
+  {
+    std::cerr.flush();
+  }
+
+  void OutputWriter::flush(std::ostream &output)
+  {
+    output.flush();
   }
 
 } // namespace softadastra::cli::io

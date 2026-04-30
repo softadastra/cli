@@ -2,38 +2,56 @@
  * TableFormatter.cpp
  */
 
-#include <sstream>
 #include <algorithm>
+#include <sstream>
 
+#include <softadastra/cli/utils/Style.hpp>
 #include <softadastra/cli/utils/TableFormatter.hpp>
 
 namespace softadastra::cli::utils
 {
-  std::string TableFormatter::format(const std::vector<std::string> &headers,
-                                     const std::vector<std::vector<std::string>> &rows)
+  namespace
+  {
+    namespace style = softadastra::cli::utils::style;
+
+    constexpr const char *COLUMN_SEPARATOR = "  ";
+  }
+
+  std::string TableFormatter::format(
+      const std::vector<std::string> &headers,
+      const std::vector<std::vector<std::string>> &rows)
   {
     std::ostringstream out;
 
     const auto widths = compute_column_widths(headers, rows);
 
-    // Header
+    if (widths.empty())
+    {
+      return {};
+    }
+
     if (!headers.empty())
     {
-      out << format_row(headers, widths) << "\n";
+      out << style::BOLD
+          << format_row(headers, widths)
+          << style::RESET
+          << "\n";
 
-      // Separator
+      out << style::GRAY;
+
       for (std::size_t i = 0; i < widths.size(); ++i)
       {
         out << repeat('-', widths[i]);
+
         if (i + 1 < widths.size())
         {
-          out << "  ";
+          out << COLUMN_SEPARATOR;
         }
       }
-      out << "\n";
+
+      out << style::RESET << "\n";
     }
 
-    // Rows
     for (const auto &row : rows)
     {
       out << format_row(row, widths) << "\n";
@@ -55,13 +73,11 @@ namespace softadastra::cli::utils
 
     std::vector<std::size_t> widths(column_count, 0);
 
-    // Headers
     for (std::size_t i = 0; i < headers.size(); ++i)
     {
       widths[i] = headers[i].size();
     }
 
-    // Rows
     for (const auto &row : rows)
     {
       for (std::size_t i = 0; i < row.size(); ++i)
@@ -73,33 +89,38 @@ namespace softadastra::cli::utils
     return widths;
   }
 
-  std::string TableFormatter::format_row(const std::vector<std::string> &row,
-                                         const std::vector<std::size_t> &widths)
+  std::string TableFormatter::format_row(
+      const std::vector<std::string> &row,
+      const std::vector<std::size_t> &widths)
   {
     std::ostringstream out;
 
     for (std::size_t i = 0; i < widths.size(); ++i)
     {
-      if (i < row.size())
+      const std::string cell =
+          i < row.size()
+              ? row[i]
+              : std::string{};
+
+      out << cell;
+
+      if (cell.size() < widths[i])
       {
-        out << row[i];
-        out << repeat(' ', widths[i] - row[i].size());
-      }
-      else
-      {
-        out << repeat(' ', widths[i]);
+        out << repeat(' ', widths[i] - cell.size());
       }
 
       if (i + 1 < widths.size())
       {
-        out << "  ";
+        out << COLUMN_SEPARATOR;
       }
     }
 
     return out.str();
   }
 
-  std::string TableFormatter::repeat(char c, std::size_t count)
+  std::string TableFormatter::repeat(
+      char c,
+      std::size_t count)
   {
     return std::string(count, c);
   }
