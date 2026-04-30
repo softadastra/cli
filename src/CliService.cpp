@@ -13,6 +13,7 @@
 #include <softadastra/cli/types/CliErrorCode.hpp>
 #include <softadastra/cli/utils/Style.hpp>
 #include <softadastra/cli/utils/Ui.hpp>
+#include <softadastra/cli/utils/StringUtils.hpp>
 
 namespace softadastra::cli
 {
@@ -21,6 +22,20 @@ namespace softadastra::cli
   namespace cli_types = softadastra::cli::types;
   namespace ui = softadastra::cli::utils::ui;
   namespace style = softadastra::cli::utils::style;
+
+  namespace
+  {
+    [[nodiscard]] bool is_exit_input(std::string_view input)
+    {
+      const auto value =
+          softadastra::cli::utils::StringUtils::to_lower(
+              softadastra::cli::utils::StringUtils::trim(input));
+
+      return value == "exit" ||
+             value == "quit" ||
+             value == "q";
+    }
+  }
 
   CliService::CliService(const cli_core::CliConfig &config)
       : config_(config),
@@ -125,21 +140,26 @@ namespace softadastra::cli
     if (config_.show_banner)
     {
       cli_io::Console::writeln(
-          std::string(style::BOLD) +
-          style::CYAN +
-          config_.app_name +
-          style::RESET +
-          " CLI ready.");
+          std::string(style::RESET) +
+          "Softadastra v" +
+          config_.version +
+          "  CLI");
 
-      ui::tip_line(
-          cli_io::Console::out(),
-          "Run 'help' to list available commands.");
+      cli_io::Console::writeln(
+          std::string(style::RESET) +
+          "runtime: local-first node");
+
+      cli_io::Console::writeln(
+          std::string(style::RESET) +
+          "exit: Ctrl+D | clear: Ctrl+L | help");
+
+      cli_io::Console::writeln("");
     }
 
     while (engine_.running())
     {
       const auto input =
-          cli_io::InputReader::read_line("> ");
+          cli_io::InputReader::read_line("softadastra> ");
 
       if (!input.has_value())
       {
@@ -147,9 +167,15 @@ namespace softadastra::cli
         break;
       }
 
-      if (input->empty())
+      if (softadastra::cli::utils::StringUtils::is_blank(*input))
       {
         continue;
+      }
+
+      if (is_exit_input(*input))
+      {
+        ui::info_line(cli_io::Console::out(), "Exiting...");
+        break;
       }
 
       const auto result = engine_.execute(*input);

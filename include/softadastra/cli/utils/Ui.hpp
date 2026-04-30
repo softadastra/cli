@@ -95,8 +95,8 @@ namespace softadastra::cli::utils::ui
       std::string_view msg)
   {
     out << "\n"
-        << BOLD << CYAN << "TIP:" << RESET
-        << " " << msg << "\n\n";
+        << GRAY << "Hint: " << msg << RESET
+        << "\n\n";
   }
 
   [[nodiscard]] inline std::string faint_sep()

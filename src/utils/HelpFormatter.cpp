@@ -93,42 +93,34 @@ namespace softadastra::cli::utils
   {
     std::ostringstream out;
 
-    out << style::BOLD << style::CYAN
-        << app_name
-        << style::RESET
-        << "\n\n";
+    out << style::BOLD << app_name << style::RESET << "\n\n";
 
-    ui::section(out, "Usage");
+    out << "Usage\n";
     out << "  " << app_name << " <command> [options]\n\n";
 
-    ui::section(out, "Commands");
+    out << "Commands\n";
 
     for (const auto &cmd : commands)
     {
       const std::string label = format_command_label(cmd);
 
       out << "  "
-          << style::BOLD << style::CYAN
           << std::left
           << std::setw(COMMAND_COLUMN_WIDTH)
-          << label
-          << style::RESET;
+          << label;
 
       if (!cmd.description.empty())
       {
-        out << style::GRAY << cmd.description << style::RESET;
+        out << cmd.description;
       }
 
       out << "\n";
     }
 
     out << "\n";
-    out << style::GRAY
-        << "Run '"
+    out << "Run '"
         << app_name
-        << " help <command>' for details."
-        << style::RESET
-        << "\n";
+        << " help <command>' for details.\n";
 
     return out.str();
   }
@@ -138,39 +130,27 @@ namespace softadastra::cli::utils
   {
     std::ostringstream out;
 
-    out << style::BOLD << style::CYAN
-        << command.name
-        << style::RESET
-        << "\n";
-
-    out << ui::faint_sep() << "\n\n";
+    out << style::BOLD << command.name << style::RESET << "\n\n";
 
     if (!command.description.empty())
     {
-      out << style::GRAY
-          << command.description
-          << style::RESET
-          << "\n\n";
+      out << command.description << "\n\n";
     }
 
-    ui::section(out, "Usage");
+    out << "Usage\n";
     out << "  " << format_command_line(command) << "\n";
 
     if (!command.aliases.empty())
     {
       out << "\n";
-      ui::section(out, "Aliases");
-      out << "  "
-          << style::YELLOW
-          << format_aliases(command.aliases)
-          << style::RESET
-          << "\n";
+      out << "Aliases\n";
+      out << "  " << format_aliases(command.aliases) << "\n";
     }
 
     if (!command.options.empty())
     {
       out << "\n";
-      ui::section(out, "Options");
+      out << "Options\n";
 
       for (const auto &option : command.options)
       {
