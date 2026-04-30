@@ -1,7 +1,7 @@
 {
   "name": "cli",
   "namespace": "softadastra",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "type": "library",
   "include": "include",
   "license": "MIT",

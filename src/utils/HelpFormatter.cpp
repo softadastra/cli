@@ -16,8 +16,39 @@ namespace softadastra::cli::utils
     namespace ui = softadastra::cli::utils::ui;
     namespace style = softadastra::cli::utils::style;
 
-    constexpr std::size_t COMMAND_COLUMN_WIDTH = 28;
+    constexpr std::size_t COMMAND_COLUMN_WIDTH = 24;
     constexpr std::size_t OPTION_COLUMN_WIDTH = 28;
+
+    std::string format_aliases(const std::vector<std::string> &aliases)
+    {
+      std::ostringstream out;
+
+      for (std::size_t i = 0; i < aliases.size(); ++i)
+      {
+        out << aliases[i];
+
+        if (i + 1 < aliases.size())
+        {
+          out << ", ";
+        }
+      }
+
+      return out.str();
+    }
+
+    std::string format_command_label(const command::CliCommand &cmd)
+    {
+      std::ostringstream out;
+
+      out << cmd.name;
+
+      if (!cmd.aliases.empty())
+      {
+        out << " (" << format_aliases(cmd.aliases) << ")";
+      }
+
+      return out.str();
+    }
 
     std::string format_option_line(const command::CliOption &option)
     {
@@ -41,7 +72,8 @@ namespace softadastra::cli::utils
       }
 
       out << "  "
-          << style::CYAN << std::left
+          << style::CYAN
+          << std::left
           << std::setw(OPTION_COLUMN_WIDTH)
           << opt.str()
           << style::RESET;
@@ -49,40 +81,6 @@ namespace softadastra::cli::utils
       if (!option.description.empty())
       {
         out << style::GRAY << option.description << style::RESET;
-      }
-
-      return out.str();
-    }
-
-    std::string format_aliases(const std::vector<std::string> &aliases)
-    {
-      std::ostringstream out;
-
-      for (std::size_t i = 0; i < aliases.size(); ++i)
-      {
-        out << aliases[i];
-
-        if (i + 1 < aliases.size())
-        {
-          out << ", ";
-        }
-      }
-
-      return out.str();
-    }
-
-    std::string format_command_name(const command::CliCommand &cmd)
-    {
-      std::ostringstream out;
-
-      out << cmd.name;
-
-      if (!cmd.aliases.empty())
-      {
-        out << " "
-            << style::GRAY << "("
-            << format_aliases(cmd.aliases)
-            << ")" << style::RESET;
       }
 
       return out.str();
@@ -107,10 +105,13 @@ namespace softadastra::cli::utils
 
     for (const auto &cmd : commands)
     {
+      const std::string label = format_command_label(cmd);
+
       out << "  "
-          << style::BOLD << std::left
+          << style::BOLD << style::CYAN
+          << std::left
           << std::setw(COMMAND_COLUMN_WIDTH)
-          << format_command_name(cmd)
+          << label
           << style::RESET;
 
       if (!cmd.description.empty())
