@@ -1,11 +1,11 @@
 {
   "name": "cli",
   "namespace": "softadastra",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "type": "library",
   "include": "include",
   "license": "MIT",
-  "description": "Modular command-line interface engine for Softadastra systems: parsing, command registry, handlers, interactive REPL, and structured terminal I/O. Designed for deterministic, composable, registry-safe integration.",
+  "description": "Composable CLI primitives for Softadastra commands, REPL, and terminal I/O.",
   "keywords": [
     "softadastra",
     "cli",
