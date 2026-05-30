@@ -85,7 +85,7 @@ namespace
   void test_parse()
   {
     EngineFixture fixture;
-    fixture.engine.start();
+    assert(fixture.engine.start());
 
     const auto parsed = fixture.engine.parse("test arg1 arg2");
 
@@ -99,7 +99,7 @@ namespace
   void test_execute_success()
   {
     EngineFixture fixture;
-    fixture.engine.start();
+    assert(fixture.engine.start());
 
     const auto result = fixture.engine.execute("test");
 
@@ -112,7 +112,7 @@ namespace
   void test_execute_unknown_command()
   {
     EngineFixture fixture;
-    fixture.engine.start();
+    assert(fixture.engine.start());
 
     const auto result = fixture.engine.execute("unknown");
 
@@ -123,7 +123,7 @@ namespace
   void test_execute_empty_input()
   {
     EngineFixture fixture;
-    fixture.engine.start();
+    assert(fixture.engine.start());
 
     const auto result = fixture.engine.execute("");
 
@@ -133,7 +133,7 @@ namespace
   void test_stop()
   {
     EngineFixture fixture;
-    fixture.engine.start();
+    assert(fixture.engine.start());
 
     fixture.engine.stop();
 
