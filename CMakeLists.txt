@@ -1,8 +1,14 @@
 cmake_minimum_required(VERSION 3.20)
 
+if(NOT DEFINED SOFTADASTRA_VERSION)
+    set(SOFTADASTRA_VERSION "0.1.0")
+endif()
+
+string(REGEX REPLACE "^v" "" SOFTADASTRA_VERSION "${SOFTADASTRA_VERSION}")
+
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     project(softadastra_cli
-        VERSION 0.1.0
+        VERSION ${SOFTADASTRA_VERSION}
         DESCRIPTION "Softadastra CLI - Command line interface engine"
         LANGUAGES CXX
     )
@@ -87,7 +93,7 @@ endif()
 # ========================
 set_target_properties(softadastra_cli PROPERTIES
     OUTPUT_NAME softadastra_cli
-    VERSION 0.1.0
+    VERSION ${SOFTADASTRA_VERSION}
     SOVERSION 0
     EXPORT_NAME cli
 )
@@ -118,7 +124,7 @@ install(
 
 write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/softadastra_cliConfigVersion.cmake"
-    VERSION 0.1.0
+    VERSION ${SOFTADASTRA_VERSION}
     COMPATIBILITY SameMajorVersion
 )
 
@@ -162,7 +168,7 @@ endif()
 # Summary
 # ========================
 message(STATUS "------------------------------------------------------")
-message(STATUS "softadastra::cli configured (0.1.0)")
+message(STATUS "softadastra::cli configured (${SOFTADASTRA_VERSION})")
 message(STATUS "Include dir:      ${CMAKE_CURRENT_SOURCE_DIR}/include")
 message(STATUS "Build tests:      ${SOFTADASTRA_CLI_BUILD_TESTS}")
 message(STATUS "Build examples:   ${SOFTADASTRA_CLI_BUILD_EXAMPLES}")
